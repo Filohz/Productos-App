@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:productos_app/models/models.dart';
 
 class ProductCard extends StatelessWidget {
+  final Product product;
+
+  const ProductCard({
+    super.key,
+    required this.product,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -22,11 +30,11 @@ class ProductCard extends StatelessWidget {
         child: Stack(
           alignment: Alignment.bottomLeft,
           children: [
-            _BackgroundImage(),
-            _ProductDetails(),
-            Positioned(top: 0, right: 0, child: _Price()),
-            //todo:mostrar de manera condicional.
-            Positioned(top: 0, left: 0, child: _NotAvailable()),
+            _BackgroundImage(imgUrl: product.picture),
+            _ProductDetails(title: product.name, subtitle: product.id!),
+            Positioned(top: 0, right: 0, child: _Price(price: product.price)),
+            if (!product.available)
+              Positioned(top: 0, left: 0, child: _NotAvailable()),
           ],
         ),
       ),
@@ -60,6 +68,11 @@ class _NotAvailable extends StatelessWidget {
 }
 
 class _Price extends StatelessWidget {
+  final double price;
+
+  const _Price({
+    required this.price,
+  });
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -70,17 +83,32 @@ class _Price extends StatelessWidget {
           color: Colors.green,
           borderRadius: BorderRadius.only(
               topRight: Radius.circular(25), bottomLeft: Radius.circular(25))),
-      child: const FittedBox(
-          fit: BoxFit.contain,
-          child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Text('\$103.990',
-                  style: TextStyle(color: Colors.white, fontSize: 20)))),
+      child: FittedBox(
+        fit: BoxFit.contain,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Text(
+            '\$$price',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
 
 class _ProductDetails extends StatelessWidget {
+  final String title;
+  final String subtitle;
+
+  const _ProductDetails({
+    required this.title,
+    required this.subtitle,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -92,10 +120,10 @@ class _ProductDetails extends StatelessWidget {
         decoration: _customBoxDecoration(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text(
-              'Disco Duro G',
-              style: TextStyle(
+              title,
+              style: const TextStyle(
                   fontSize: 20,
                   color: Colors.white,
                   fontWeight: FontWeight.bold),
@@ -103,8 +131,8 @@ class _ProductDetails extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              'Id del disco duro',
-              style: TextStyle(
+              subtitle,
+              style: const TextStyle(
                 fontSize: 15,
                 color: Colors.white,
               ),
@@ -122,18 +150,28 @@ class _ProductDetails extends StatelessWidget {
 }
 
 class _BackgroundImage extends StatelessWidget {
+  final String? imgUrl;
+
+  const _BackgroundImage({
+    this.imgUrl,
+  });
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(25),
-      child: const SizedBox(
+      child: SizedBox(
         width: double.infinity,
         height: 400,
-        child: FadeInImage(
-          placeholder: AssetImage('assets/jar-loading.gif'),
-          image: NetworkImage('https://via.placeholder.com/400x300/f6f6f6'),
-          fit: BoxFit.cover,
-        ),
+        child: imgUrl == null
+            ? const Image(
+                image: AssetImage('assets/no-image.png'),
+                fit: BoxFit.cover,
+              )
+            : FadeInImage(
+                placeholder: const AssetImage('assets/jar-loading.gif'),
+                image: NetworkImage(imgUrl!),
+                fit: BoxFit.cover,
+              ),
       ),
     );
   }
